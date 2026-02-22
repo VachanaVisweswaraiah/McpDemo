@@ -1,11 +1,36 @@
 # MCP Project README
 
-This project demonstrates end-to-end **Model Context Protocol (MCP)** workflows using two folders:
+This project demonstrates end-to-end **Model Context Protocol (MCP)** workflows across three folders:
 
+- `01_basic_mcp/`: basic MCP agent/client workflow using external MCP servers from config.
 - `02_mcpcrashcourse/`: MCP weather server examples with `stdio` and `sse` clients.
 - `03_mcplangchain/`: LangChain + MCP adapter workflow with multiple MCP servers (`math` + `weather`).
 
 It is designed as a practical learning and development reference for creating MCP tools/resources and integrating them into local clients, VS Code, and Claude Desktop.
+
+## All Folders Quick Run
+
+| Folder | Run from | Command | What it does |
+| --- | --- | --- | --- |
+| `01_basic_mcp` | `01_basic_mcp/` | `uv run python app.py` | Starts basic MCP agent chat using external MCP servers from `browser_mcp.json`. |
+| `02_mcpcrashcourse` (Inspector) | repo root | `uv run mcp dev 02_mcpcrashcourse/server/weather.py` | Runs crash-course weather MCP server in development mode. |
+| `02_mcpcrashcourse` (stdio client) | `02_mcpcrashcourse/mcpserver/` | `uv run python client-stdio.py` | Connects to local stdio MCP server and executes weather tool calls. |
+| `02_mcpcrashcourse` (sse server) | repo root | `uv run 02_mcpcrashcourse/mcpserver/server.py` | Starts SSE weather server on port `8000`. |
+| `02_mcpcrashcourse` (sse client) | repo root | `uv run 02_mcpcrashcourse/mcpserver/client-sse.py` | Connects to SSE server at `http://localhost:8000/sse`. |
+| `03_mcplangchain` (weather server) | repo root | `uv run 03_mcplangchain/weather.py` | Starts streamable HTTP weather MCP server for LangChain client. |
+| `03_mcplangchain` (agent client) | `03_mcplangchain/` | `uv run client.py` | Runs multi-server LangChain MCP agent (`math` + `weather`). |
+
+### Recommended First Run Order (Beginner)
+
+1. **Start with the easiest flow (`01_basic_mcp`)**
+   - `cd 01_basic_mcp`
+   - `uv run python app.py`
+2. **Try the crash-course server workflow (`02_mcpcrashcourse`)**
+   - From repo root: `uv run mcp dev 02_mcpcrashcourse/server/weather.py`
+   - In another terminal: `cd 02_mcpcrashcourse/mcpserver && uv run python client-stdio.py`
+3. **Run the multi-server LangChain workflow (`03_mcplangchain`)**
+   - Terminal 1 (repo root): `uv run 03_mcplangchain/weather.py`
+   - Terminal 2: `cd 03_mcplangchain && uv run client.py`
 
 ## Introduction
 
@@ -19,6 +44,7 @@ MCP is a standard interface that lets AI assistants and clients interact with ex
 
 - Python `3.11+`
 - `uv`
+- Node.js + `npx` (required for `01_basic_mcp/browser_mcp.json` servers)
 - Internet access (for weather APIs in crash course example)
 - Optional: VS Code MCP-compatible extension and Claude Desktop
 - Optional: `.env` with `GROQ_API_KEY` for LangChain agent examples
@@ -109,6 +135,8 @@ uv add "mcp[cli]"
 
 ### Client workflows
 
+- `01_basic_mcp/app.py`:
+  Interactive MCP agent chat using config from `01_basic_mcp/browser_mcp.json` (Playwright, Airbnb, DuckDuckGo servers).
 - `02_mcpcrashcourse/mcpserver/client-stdio.py`:
   Demonstrates stdio connection and tool calls.
 - `02_mcpcrashcourse/mcpserver/client-sse.py`:
@@ -118,6 +146,9 @@ uv add "mcp[cli]"
 
 - `02_mcpcrashcourse/client.py`:
   Interactive MCP agent chat; run from `02_mcpcrashcourse/` so `weather.json` is in the current directory.
+
+- `01_basic_mcp/main.py`:
+  Minimal starter entrypoint for the basic folder.
 
 ## Running the Server
 
@@ -181,6 +212,17 @@ Install LangChain weather server:
 uv run mcp install 03_mcplangchain/weather.py
 ```
 
+## Run `01_basic_mcp` Workflow
+
+Run from the `01_basic_mcp/` directory (so `browser_mcp.json` is in the current directory):
+
+```bash
+cd 01_basic_mcp
+uv run python app.py
+```
+
+This workflow uses `01_basic_mcp/browser_mcp.json`, which starts external MCP servers via `npx`.
+
 ## MCP Connect in VS Code
 
 ### Step-by-step setup
@@ -229,6 +271,10 @@ Then test prompts:
 
 ```text
 McpDemo/
+├── 01_basic_mcp/
+│   ├── app.py                        # Basic MCP agent chat workflow using browser_mcp.json
+│   ├── browser_mcp.json              # External MCP server config (playwright/airbnb/duckduckgo-search)
+│   └── main.py                       # Minimal starter file
 ├── 02_mcpcrashcourse/
 │   ├── client.py                     # Agent-based MCP client flow
 │   ├── weather.json                  # MCP config for weather server

@@ -2,8 +2,9 @@
 
 ## 1) Project Overview
 
-This repository is an MCP learning and development workspace built around two complementary folders:
+This repository is an MCP learning and development workspace built around three complementary folders:
 
+- `01_basic_mcp/` - foundational MCP agent/client workflow using external MCP servers from a config file.
 - `02_mcpcrashcourse/` - MCP server-first workflow (build server tools/resources, run transports, connect clients).
 - `03_mcplangchain/` - MCP + LangChain workflow (connect multiple MCP servers and orchestrate tools through an LLM agent).
 
@@ -63,6 +64,12 @@ In practical usage, MCP gives your assistant structured access to live capabilit
 - `PROJECT_ANALYSIS.md` - detailed technical explanation (this document).
 - `pyproject.toml` / `uv.lock` - dependency and environment control.
 
+## `01_basic_mcp/` (intro MCP consumer workflow)
+
+- Basic MCP agent chat flow
+- Config-driven external MCP server connections
+- Introductory entrypoint and minimal starter script
+
 ## `02_mcpcrashcourse/` (server-centric MCP workflow)
 
 - Custom MCP weather server logic
@@ -75,16 +82,27 @@ In practical usage, MCP gives your assistant structured access to live capabilit
 - Multi-server client using LangChain MCP adapters
 - ReAct agent executing tool calls over MCP servers
 
-### Relationship between `02_mcpcrashcourse` and `03_mcplangchain`
+### Relationship between `01_basic_mcp`, `02_mcpcrashcourse`, and `03_mcplangchain`
 
-- `02_mcpcrashcourse` teaches the core server/client MCP mechanics.
-- `03_mcplangchain` builds on those mechanics by adding multi-server orchestration and LLM-driven tool selection.
+- `01_basic_mcp` introduces config-driven MCP consumption with an interactive agent.
+- `02_mcpcrashcourse` adds custom MCP server implementation and transport-level client examples.
+- `03_mcplangchain` extends this into multi-server LLM orchestration via LangChain/LangGraph.
 
-In short: the first folder focuses on "how MCP plumbing works"; the second focuses on "how agents use MCP at runtime."
+In short: the repo progresses from **basic MCP usage** -> **custom server development** -> **multi-server agent orchestration**.
 
 ---
 
 ## 4) Key File Breakdown
+
+## `01_basic_mcp/`
+
+- `app.py`
+  - Interactive MCP agent chat using `MCPAgent`/`MCPClient`.
+  - Reads MCP server definitions from `browser_mcp.json`.
+- `browser_mcp.json`
+  - External MCP server config for Playwright, Airbnb, and DuckDuckGo Search via `npx`.
+- `main.py`
+  - Minimal starter script.
 
 ## `02_mcpcrashcourse/`
 
@@ -143,6 +161,7 @@ In short: the first folder focuses on "how MCP plumbing works"; the second focus
 
 - Python `>= 3.11`
 - `uv`
+- Node.js + `npx` (for `01_basic_mcp/browser_mcp.json` servers)
 - Optional: `.env` with `GROQ_API_KEY` for LangChain examples
 - Optional: VS Code MCP setup / Claude Desktop
 
@@ -215,6 +234,7 @@ GROQ_API_KEY=your_key_here
 - **SSE client:** Start the server from root with `uv run 02_mcpcrashcourse/mcpserver/server.py`, then from root run `uv run 02_mcpcrashcourse/mcpserver/client-sse.py`. No need to `cd` into mcpserver.
 - **`02_mcpcrashcourse/client.py`:** Run from `02_mcpcrashcourse/` so that `weather.json` is in the current directory (config path in code is `weather.json`).
 - **`03_mcplangchain/client.py`:** Run from `03_mcplangchain/` so that `mathserver.py` is found when the client spawns the math server. Start the LangChain weather server first in another terminal: `uv run 03_mcplangchain/weather.py` (client expects it at `http://localhost:8000/mcp`).
+- **`01_basic_mcp/app.py`:** Run from `01_basic_mcp/` so `browser_mcp.json` is in the current directory. This config launches external servers via `npx`.
 - **VS Code MCP config:** Paths in the example JSON are relative to the workspace root; the MCP host typically runs with workspace root as cwd.
 
 ---
@@ -256,6 +276,11 @@ GROQ_API_KEY=your_key_here
 ### Multi-server orchestration
 
 `03_mcplangchain/client.py` combines tools from two MCP servers into one agent context, allowing one prompt stream to invoke math and weather tools as needed.
+
+## C) Basic MCP workflow capabilities
+
+- `01_basic_mcp/app.py` demonstrates MCP agent chat with memory using configured external MCP servers.
+- `01_basic_mcp/browser_mcp.json` provides a reusable pattern for declarative MCP server registration.
 
 ---
 
@@ -347,6 +372,13 @@ cd 02_mcpcrashcourse
 uv run python client.py
 ```
 
+Basic MCP agent client (run from `01_basic_mcp/` so `browser_mcp.json` is in cwd):
+
+```bash
+cd 01_basic_mcp
+uv run python app.py
+```
+
 LangChain multi-server client (run from `03_mcplangchain/`; start weather server first in another terminal):
 
 ```bash
@@ -403,6 +435,7 @@ Example prompts in chat:
 - "Get alerts for CA."
 - "Forecast for 37.77, -122.42."
 - "What is (3 + 5) x 12?"
+- "Search for best flights to New York next weekend" (through configured external MCP search/tooling in `01_basic_mcp`).
 
 ---
 
