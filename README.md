@@ -1,46 +1,44 @@
-# MCP Demo Project
+# MCP Project README
 
-This repository demonstrates practical **Model Context Protocol (MCP)** workflows using two learning tracks:
+This project demonstrates end-to-end **Model Context Protocol (MCP)** workflows using two folders:
 
-- `01_basic_mcp/`: MCP client-side chat workflow using external MCP servers (Playwright, Airbnb, DuckDuckGo).
-- `02_mcpcrashcourse/`: MCP server workflow with custom weather tools/resources, plus stdio and SSE clients.
+- `02_mcpcrashcourse/`: MCP weather server examples with `stdio` and `sse` clients.
+- `03_mcplangchain/`: LangChain + MCP adapter workflow with multiple MCP servers (`math` + `weather`).
 
-The goal is to help you understand the full cycle: define tools/resources, run an MCP server, connect a client, and use the setup in local development tools like VS Code and Claude Desktop.
+It is designed as a practical learning and development reference for creating MCP tools/resources and integrating them into local clients, VS Code, and Claude Desktop.
 
 ## Introduction
 
-This project is designed as a hands-on MCP reference for:
+MCP is a standard interface that lets AI assistants and clients interact with external tools/resources through MCP servers. In this project, you can see both:
 
-- Building and running a custom MCP server.
-- Exposing tools/resources to MCP clients.
-- Testing with both `stdio` and `sse` transports.
-- Integrating MCP servers with chat-based developer workflows.
+- how to build MCP servers with `FastMCP`
+- how to consume MCP tools from Python clients and agent workflows
+- how to connect MCP servers to editor/desktop chat environments
 
 ### Requirements
 
 - Python `3.11+`
-- `uv` package manager
-- Internet access (for weather API calls to `api.weather.gov`)
-- Optional: Claude Desktop and VS Code MCP-compatible extension/workflow
+- `uv`
+- Internet access (for weather APIs in crash course example)
+- Optional: VS Code MCP-compatible extension and Claude Desktop
+- Optional: `.env` with `GROQ_API_KEY` for LangChain agent examples
 
 ## Setup Steps
 
-### 1) Clone and enter the project
+### 1) Clone and open project
 
 ```bash
 git clone <your-repo-url>
 cd McpDemo
 ```
 
-### 2) Initialize project and virtual environment (if starting fresh)
+### 2) Create virtual environment
 
 ```bash
-uv init mcpdemo
-cd mcpdemo
 uv venv
 ```
 
-Activate the environment:
+Activate it:
 
 - macOS/Linux:
 
@@ -56,21 +54,25 @@ source .venv/bin/activate
 
 ### 3) Install dependencies
 
-This repo supports both project-level dependencies and folder-specific requirements.
-
-Using `pyproject.toml`:
+Root dependencies:
 
 ```bash
 uv sync
 ```
 
-Using `requirements.txt` for the crash course MCP server:
+Crash course server dependencies (`requirements.txt`):
 
 ```bash
 uv pip install -r 02_mcpcrashcourse/mcpserver/requirements.txt
 ```
 
-Or add directly with `uv`:
+LangChain MCP dependencies (`requirements.txt`):
+
+```bash
+uv pip install -r 03_mcplangchain/requirements.txt
+```
+
+If you are initializing fresh and adding MCP CLI manually:
 
 ```bash
 uv add "mcp[cli]"
@@ -78,67 +80,99 @@ uv add "mcp[cli]"
 
 ## Features
 
-### MCP Tools
+### Tools and resources in `02_mcpcrashcourse`
 
-From `02_mcpcrashcourse/mcpserver/server.py` and `02_mcpcrashcourse/server/weather.py`:
+- `get_alerts(state: str)`:
+  Fetches active weather alerts by US state.
+- `get_forecast(latitude: float, longitude: float)`:
+  Fetches detailed weather forecast periods.
+- `echo://{message}` resource:
+  Returns a simple echo response as an MCP resource.
 
-- `get_alerts(state: str)`: Fetches active weather alerts for a US state.
-- `get_forecast(latitude: float, longitude: float)`: Fetches forecast periods for a location.
+### Tools in `03_mcplangchain`
 
-### MCP Resources
+- `add(a: int, b: int)`:
+  Adds two numbers.
+- `multiple(a: int, b: int)`:
+  Multiplies two numbers.
+- `get_weather(location: str)`:
+  Returns weather text from the sample weather server.
 
-From `02_mcpcrashcourse/server/weather.py`:
+### Client workflows
 
-- `echo://{message}`: Returns an echoed message as an MCP resource.
-
-### Client and Agent Workflows
-
-- `client-stdio.py`: Connects to the server over stdio and calls tools.
-- `client-sse.py`: Connects to the server over SSE (`http://localhost:8000/sse`).
-- `01_basic_mcp/app.py`: Interactive MCP agent chat with memory via `mcp-use`.
+- `02_mcpcrashcourse/mcpserver/client-stdio.py`:
+  Demonstrates stdio connection and tool calls.
+- `02_mcpcrashcourse/mcpserver/client-sse.py`:
+  Demonstrates SSE connection and tool calls.
+- `03_mcplangchain/client.py`:
+  Connects to multiple MCP servers using `MultiServerMCPClient` and invokes tools through a LangGraph ReAct agent.
 
 ## Running the Server
 
-Use the weather server in `02_mcpcrashcourse/server/weather.py` for MCP CLI workflows.
+## MCP Inspector (development mode)
 
-### Development mode (MCP Inspector)
+For weather crash course server:
 
 ```bash
 uv run mcp dev 02_mcpcrashcourse/server/weather.py
 ```
 
-### Normal mode
+For math server:
+
+```bash
+uv run mcp dev 03_mcplangchain/mathserver.py
+```
+
+## Normal mode
+
+Crash course weather server:
 
 ```bash
 uv run mcp run 02_mcpcrashcourse/server/weather.py
 ```
 
-### Install in Claude Desktop
+Math server (stdio):
+
+```bash
+uv run 03_mcplangchain/mathserver.py
+```
+
+Weather server in LangChain folder (streamable HTTP):
+
+```bash
+uv run 03_mcplangchain/weather.py
+```
+
+## Install server in Claude Desktop
+
+Install crash course weather server:
 
 ```bash
 uv run mcp install 02_mcpcrashcourse/server/weather.py
 ```
 
-You can also use the existing MCP config file at `02_mcpcrashcourse/weather.json` if you prefer manual configuration.
+Install math server:
+
+```bash
+uv run mcp install 03_mcplangchain/mathserver.py
+```
 
 ## MCP Connect in VS Code
 
 ### Step-by-step setup
 
-1. Open this repository in VS Code.
-2. Create/activate your virtual environment and install dependencies (`uv sync`).
-3. Start the MCP server in one terminal:
+1. Open `McpDemo` in VS Code.
+2. Create/activate virtual environment and install dependencies.
+3. Add MCP server config in your MCP extension/settings.
+4. Start needed servers (if your setup requires manual launch).
+5. Open chat panel and verify tools can be called.
 
-```bash
-uv run mcp run 02_mcpcrashcourse/server/weather.py
-```
-
-4. Configure MCP servers in your VS Code MCP settings or extension config. Example:
+Example MCP configuration:
 
 ```json
 {
   "mcpServers": {
-    "weather": {
+    "weather-crash-course": {
       "command": "uv",
       "args": [
         "run",
@@ -148,46 +182,62 @@ uv run mcp run 02_mcpcrashcourse/server/weather.py
         "run",
         "02_mcpcrashcourse/server/weather.py"
       ]
+    },
+    "math": {
+      "command": "python",
+      "args": ["03_mcplangchain/mathserver.py"]
+    },
+    "weather-langchain": {
+      "command": "python",
+      "args": ["03_mcplangchain/weather.py"]
     }
   }
 }
 ```
 
-5. Launch the chat panel in your MCP-compatible VS Code extension.
-6. Confirm the `weather` server is available, then test prompts like:
-   - "Get alerts for CA"
-   - "Get forecast for latitude 37.77 and longitude -122.42"
+Then test prompts:
+
+- "Get alerts for CA"
+- "What is the forecast for 37.77, -122.42?"
+- "What is (3 + 5) x 12?"
 
 ## Project Structure
 
 ```text
 McpDemo/
-├── 01_basic_mcp/
-│   ├── app.py                # Interactive MCP agent chat using MCPClient + memory
-│   ├── browser_mcp.json      # MCP server definitions for Playwright/Airbnb/DuckDuckGo
-│   └── main.py               # Minimal starter script
 ├── 02_mcpcrashcourse/
-│   ├── client.py             # Agent-based MCP client flow
-│   ├── weather.json          # MCP config targeting local weather server
+│   ├── client.py                     # Agent-based MCP client flow
+│   ├── weather.json                  # MCP config for weather server
 │   ├── server/
-│   │   └── weather.py        # FastMCP weather server (tools + echo resource)
+│   │   └── weather.py                # FastMCP weather server (tools + resource)
 │   └── mcpserver/
-│       ├── server.py         # FastMCP server with SSE/stdio transport switch
-│       ├── client-stdio.py   # Stdio MCP client example
-│       ├── client-sse.py     # SSE MCP client example
-│       ├── requirements.txt  # Minimal dependency set for mcpserver folder
-│       └── Dockerfile        # Containerized server setup
-├── pyproject.toml            # Project dependencies and metadata
-├── uv.lock                   # Locked dependency resolution
-└── README.md                 # Project documentation
+│       ├── server.py                 # FastMCP server with SSE/stdio examples
+│       ├── client-stdio.py           # Stdio client example
+│       ├── client-sse.py             # SSE client example
+│       ├── requirements.txt          # Folder-specific dependencies
+│       └── Dockerfile                # Docker setup for server
+├── 03_mcplangchain/
+│   ├── client.py                     # Multi-server MCP client using LangChain adapters
+│   ├── mathserver.py                 # Math MCP server (stdio) with add/multiple tools
+│   ├── weather.py                    # Weather MCP server (streamable HTTP)
+│   ├── main.py                       # Basic starter file
+│   └── requirements.txt              # LangChain MCP dependencies
+├── pyproject.toml                    # Project metadata/dependencies
+├── uv.lock                           # Locked dependency graph
+└── README.md                         # Documentation
 ```
 
-## Quick Start (Recommended)
+## Quick Start
 
 ```bash
 uv sync
 uv run mcp dev 02_mcpcrashcourse/server/weather.py
 ```
 
-Then connect using `02_mcpcrashcourse/mcpserver/client-stdio.py`, `client-sse.py`, VS Code, or Claude Desktop.
+In another terminal:
+
+```bash
+cd 02_mcpcrashcourse/mcpserver
+uv run client-stdio.py
+```
 
