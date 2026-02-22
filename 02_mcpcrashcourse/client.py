@@ -12,8 +12,8 @@ async def run_memory_chat():
     load_dotenv()
     os.environ["GROQ_API_KEY"]=os.getenv("GROQ_API_KEY")
 
-    # Config file path - change this to your config file
-    config_file = "server/weather.json"
+    # Config file path (run from 02_mcpcrashcourse/ so weather.json is in cwd)
+    config_file = "weather.json"
 
     print("Initializing chat...")
 

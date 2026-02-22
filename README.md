@@ -23,6 +23,8 @@ MCP is a standard interface that lets AI assistants and clients interact with ex
 - Optional: VS Code MCP-compatible extension and Claude Desktop
 - Optional: `.env` with `GROQ_API_KEY` for LangChain agent examples
 
+**Command verification:** All commands below assume you are in the **repository root** (`McpDemo/`) unless a step says otherwise. Client scripts that spawn a server (e.g. stdio) or load config by relative path must be run from the directory indicated.
+
 ## Setup Steps
 
 ### 1) Clone and open project
@@ -30,6 +32,13 @@ MCP is a standard interface that lets AI assistants and clients interact with ex
 ```bash
 git clone <your-repo-url>
 cd McpDemo
+```
+
+If you are starting a brand-new project from scratch (optional):
+
+```bash
+uv init mcpdemo
+cd mcpdemo
 ```
 
 ### 2) Create virtual environment
@@ -105,7 +114,10 @@ uv add "mcp[cli]"
 - `02_mcpcrashcourse/mcpserver/client-sse.py`:
   Demonstrates SSE connection and tool calls.
 - `03_mcplangchain/client.py`:
-  Connects to multiple MCP servers using `MultiServerMCPClient` and invokes tools through a LangGraph ReAct agent.
+  Connects to multiple MCP servers using `MultiServerMCPClient` and invokes tools through a LangGraph ReAct agent. Run from `03_mcplangchain/` and start the weather server first in another terminal (`uv run 03_mcplangchain/weather.py`).
+
+- `02_mcpcrashcourse/client.py`:
+  Interactive MCP agent chat; run from `02_mcpcrashcourse/` so `weather.json` is in the current directory.
 
 ## Running the Server
 
@@ -121,6 +133,12 @@ For math server:
 
 ```bash
 uv run mcp dev 03_mcplangchain/mathserver.py
+```
+
+For LangChain weather server:
+
+```bash
+uv run mcp dev 03_mcplangchain/weather.py
 ```
 
 ## Normal mode
@@ -157,6 +175,12 @@ Install math server:
 uv run mcp install 03_mcplangchain/mathserver.py
 ```
 
+Install LangChain weather server:
+
+```bash
+uv run mcp install 03_mcplangchain/weather.py
+```
+
 ## MCP Connect in VS Code
 
 ### Step-by-step setup
@@ -167,7 +191,7 @@ uv run mcp install 03_mcplangchain/mathserver.py
 4. Start needed servers (if your setup requires manual launch).
 5. Open chat panel and verify tools can be called.
 
-Example MCP configuration:
+Example MCP configuration (paths are relative to the workspace root where the MCP host runs):
 
 ```json
 {
@@ -229,15 +253,19 @@ McpDemo/
 
 ## Quick Start
 
+From repository root:
+
 ```bash
 uv sync
 uv run mcp dev 02_mcpcrashcourse/server/weather.py
 ```
 
-In another terminal:
+In another terminal, run the stdio client **from the mcpserver directory** (so it can spawn `server.py` in the same folder):
 
 ```bash
 cd 02_mcpcrashcourse/mcpserver
-uv run client-stdio.py
+uv run python client-stdio.py
 ```
+
+To run the SSE client instead: start the server from root (`uv run 02_mcpcrashcourse/mcpserver/server.py`), then in a second terminal from root run `uv run 02_mcpcrashcourse/mcpserver/client-sse.py`. The weather server in `mcpserver/server.py` uses SSE on port 8000 by default.
 

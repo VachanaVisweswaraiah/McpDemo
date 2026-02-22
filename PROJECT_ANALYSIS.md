@@ -1,134 +1,139 @@
-# MCP Demo: Project Analysis and Explanation
+# MCP Demo: Detailed Project Analysis and Explanation
 
 ## 1) Project Overview
 
-### What this project is
+This repository is an MCP learning and development workspace built around two complementary folders:
 
-This project is a practical, end-to-end walkthrough of the **Model Context Protocol (MCP)** ecosystem. It demonstrates both sides of MCP development:
+- `02_mcpcrashcourse/` - MCP server-first workflow (build server tools/resources, run transports, connect clients).
+- `03_mcplangchain/` - MCP + LangChain workflow (connect multiple MCP servers and orchestrate tools through an LLM agent).
 
-- **Client-first usage** (`01_basic_mcp`): consuming existing MCP servers from an AI agent workflow.
-- **Server-first development** (`02_mcpcrashcourse`): implementing and exposing your own MCP tools/resources, then connecting clients to that server.
+The project demonstrates how MCP can be used across local scripts, agent frameworks, and developer environments.
 
-The repository is therefore not just a single app, but a learning track that shows how to move from "using MCP" to "building MCP services."
+### What is MCP (Model Context Protocol)?
 
-### What MCP is (Model Context Protocol)
+MCP is a protocol that standardizes how AI systems interact with external capabilities. Instead of hard-coding integrations per model/tool, MCP provides a common contract between:
 
-MCP is a standard protocol that allows AI assistants and agent runtimes to interact with external capabilities in a structured, interoperable way. In practical terms, MCP defines how:
+- **MCP servers** (providers of tools/resources)
+- **MCP clients** (consumers that call tools/read resources)
+- **Hosts** (IDE apps, desktop chat apps, agent runtimes)
 
-- A **server** exposes capabilities (tools/resources).
-- A **client** discovers and calls those capabilities.
-- A host environment (IDE, desktop app, agent runtime) connects both in a repeatable way.
-
-This abstraction lets you build tools once and use them in multiple MCP-capable environments (e.g., custom clients, VS Code integrations, Claude Desktop integrations, and agent frameworks).
+In practical usage, MCP gives your assistant structured access to live capabilities (e.g., weather APIs, custom business logic, browser automation, math engines).
 
 ### How MCP works in this project
 
-At a high level:
+1. MCP servers are implemented with `FastMCP`.
+2. Tools/resources are registered with decorators (`@mcp.tool`, `@mcp.resource`).
+3. Servers run over transport modes (`stdio`, `sse`, `streamable-http`).
+4. Clients discover tools and invoke them with arguments.
+5. Agent wrappers (LangChain/LangGraph) decide when to call tools during conversation.
 
-1. An MCP server is implemented using `FastMCP`.
-2. Tools (like weather lookups) and resources (like echo resource URIs) are registered.
-3. Clients connect through **stdio** or **SSE** transport.
-4. The client lists available tools/resources and executes tool calls.
-5. Agent runtimes (via `mcp-use`) can orchestrate tool calls during chat.
+### Why this project matters
 
-### Purpose of this repository
-
-- Teach MCP architecture through concrete code.
-- Demonstrate multiple transport options (`stdio` and `sse`).
-- Show integration paths from local scripts to IDE/desktop AI environments.
-- Provide a foundation to extend with more real-world tools and APIs.
+- It moves from basic MCP server operation to multi-server orchestration.
+- It shows transport diversity (`stdio`, `sse`, `streamable-http`).
+- It demonstrates both direct client invocation and agent-mediated usage.
+- It is a reusable starter for building real MCP integrations.
 
 ---
 
-## 2) General Workflow and MCP Ecosystem Fit
+## 2) MCP Workflow and Ecosystem Fit
 
-### Typical workflow represented in this repository
+### Typical MCP lifecycle represented here
 
-1. **Define capabilities** in the server (`@mcp.tool`, `@mcp.resource`).
-2. **Run the server** in development or normal mode.
-3. **Connect clients** (scripted clients, agent runtime, IDE/desktop integration).
-4. **Execute tool calls** from prompts or direct client invocation.
-5. **Return structured results** to the model/user for final response generation.
+1. **Define** tools/resources on a server.
+2. **Run** the server in dev or normal mode.
+3. **Register/connect** the server in client configs (JSON or runtime config).
+4. **Invoke** tools from scripts, chat clients, or agents.
+5. **Return** tool results to the model, which turns them into user-facing responses.
 
-### Ecosystem role of each part
+### Ecosystem mapping for this repo
 
-- **MCP Server Layer**: your capability provider (`weather` tools/resources).
-- **MCP Client Layer**: transport/session handling and tool invocation.
-- **Agent Layer** (`mcp-use` + LLM): reasoning + capability selection + memory.
-- **Host Layer** (VS Code / Claude Desktop): user-facing MCP interaction surface.
-
-This separation is valuable because each layer can evolve independently while preserving compatibility through MCP.
+- **Server layer**: `weather.py`, `mathserver.py`, `mcpserver/server.py`
+- **Client layer**: `client-stdio.py`, `client-sse.py`, `client.py`
+- **Agent orchestration layer**: `03_mcplangchain/client.py` using LangGraph ReAct agent
+- **Host integration layer**: VS Code MCP config and Claude Desktop install flow
 
 ---
 
-## 3) Folder Structure Analysis
+## 3) Folder Structure
 
-## Root-Level Structure
+## Root
 
-- `01_basic_mcp/`: introductory client/agent workflow using external MCP services.
-- `02_mcpcrashcourse/`: custom MCP server implementation and local client examples.
-- `pyproject.toml`: root dependency and project metadata.
-- `uv.lock`: locked dependency graph for reproducible installs.
-- `README.md`: setup-oriented quick guide.
-- `PROJECT_ANALYSIS.md`: this deep-dive explanation document.
+- `README.md` - quick-start setup and run instructions.
+- `PROJECT_ANALYSIS.md` - detailed technical explanation (this document).
+- `pyproject.toml` / `uv.lock` - dependency and environment control.
 
-### Relationship between `01_basic_mcp` and `02_mcpcrashcourse`
+## `02_mcpcrashcourse/` (server-centric MCP workflow)
 
-These folders represent two complementary stages:
+- Custom MCP weather server logic
+- Local MCP clients for `stdio` and `sse`
+- MCP config file for host registration
 
-- `01_basic_mcp` = **MCP consumer perspective** (how an agent uses configured MCP servers).
-- `02_mcpcrashcourse` = **MCP producer + consumer perspective** (how to build a server, then consume it via clients and config).
+## `03_mcplangchain/` (agent-centric MCP workflow)
 
-Conceptually, `02_mcpcrashcourse` is an extension of the ideas in `01_basic_mcp`:
-first consume capabilities, then create your own capabilities.
+- Independent MCP math/weather servers
+- Multi-server client using LangChain MCP adapters
+- ReAct agent executing tool calls over MCP servers
+
+### Relationship between `02_mcpcrashcourse` and `03_mcplangchain`
+
+- `02_mcpcrashcourse` teaches the core server/client MCP mechanics.
+- `03_mcplangchain` builds on those mechanics by adding multi-server orchestration and LLM-driven tool selection.
+
+In short: the first folder focuses on "how MCP plumbing works"; the second focuses on "how agents use MCP at runtime."
 
 ---
 
-## 4) File-by-File Breakdown
+## 4) Key File Breakdown
 
-### `01_basic_mcp/`
-
-- `app.py`
-  - Interactive memory-enabled chat loop using `MCPAgent` and `MCPClient`.
-  - Loads API keys from environment variables and routes user prompts through MCP-aware agent orchestration.
-- `browser_mcp.json`
-  - MCP server configuration for third-party servers (`playwright`, `airbnb`, `duckduckgo-search`).
-  - Demonstrates server registration format and command/args wiring.
-- `main.py`
-  - Minimal starter script (`Hello from mcpdemo!`) useful as baseline template.
-
-### `02_mcpcrashcourse/`
+## `02_mcpcrashcourse/`
 
 - `client.py`
-  - Agent-based client flow (`MCPAgent`, `MCPClient`) for interactive usage with conversation memory.
-  - Shows how an LLM-driven loop can call MCP tools dynamically.
+  - Interactive agent client using `MCPAgent` + `MCPClient`.
+  - Uses memory-enabled chat flow.
 - `weather.json`
-  - MCP server registration targeting local weather server via `uv run mcp run ...`.
-  - Designed for environments that consume MCP config files.
+  - MCP server registration config targeting weather server command.
 
-#### `02_mcpcrashcourse/server/`
+### `02_mcpcrashcourse/server/`
 
 - `weather.py`
-  - FastMCP weather server exposing:
-    - tool: `get_alerts(state)`
-    - resource: `echo://{message}`
-  - Demonstrates minimal but complete MCP server with API-backed functionality.
+  - FastMCP weather server.
+  - Includes tool: `get_alerts(state)` and resource: `echo://{message}`.
 
-#### `02_mcpcrashcourse/mcpserver/`
+### `02_mcpcrashcourse/mcpserver/`
 
 - `server.py`
-  - Expanded weather server with two tools:
+  - Weather server with two tools:
     - `get_alerts(state)`
     - `get_forecast(latitude, longitude)`
-  - Includes transport selection logic (`stdio`/`sse`) and NWS API helper functions.
+  - Supports transport selection logic (`stdio`/`sse`).
 - `client-stdio.py`
-  - Demonstrates stdio session setup, tool discovery, and tool invocation.
+  - Stdio client example: connect, list tools, call tool.
 - `client-sse.py`
-  - Demonstrates SSE session setup to `http://localhost:8000/sse`.
+  - SSE client example: connect to `http://localhost:8000/sse`.
 - `requirements.txt`
-  - Minimal dependencies for this folder (`mcp[cli]`).
+  - Minimal folder-level dependency (`mcp[cli]`).
 - `Dockerfile`
-  - Containerized execution path for the MCP server.
+  - Containerized run path for server.
+
+## `03_mcplangchain/`
+
+- `mathserver.py`
+  - FastMCP math server (`stdio`).
+  - Tools:
+    - `add(a, b)`
+    - `multiple(a, b)`
+- `weather.py`
+  - FastMCP weather server (`streamable-http`).
+  - Tool:
+    - `get_weather(location)`
+- `client.py`
+  - `MultiServerMCPClient` setup with both `math` and `weather` servers.
+  - `create_react_agent` invocation over aggregated MCP tools.
+- `requirements.txt`
+  - LangChain/MCP adapter dependencies.
+- `main.py`
+  - Basic starter script scaffold.
 
 ---
 
@@ -137,169 +142,240 @@ first consume capabilities, then create your own capabilities.
 ## Prerequisites
 
 - Python `>= 3.11`
-- `uv` installed
-- Optional: Claude Desktop and an MCP-capable VS Code setup
-- Optional: `.env` containing `GROQ_API_KEY` for agent-driven chat scripts
+- `uv`
+- Optional: `.env` with `GROQ_API_KEY` for LangChain examples
+- Optional: VS Code MCP setup / Claude Desktop
 
-## Local setup (recommended)
+## Local setup
 
-### Step 1: clone and enter repo
+### Step 1: clone
 
 ```bash
 git clone <repo-url>
 cd McpDemo
 ```
 
-### Step 2: create virtual environment
+### Step 2: (optional) initialize new project skeleton
+
+```bash
+uv init mcpdemo
+cd mcpdemo
+```
+
+### Step 3: create and activate virtual environment
 
 ```bash
 uv venv
 ```
 
-Activate:
-
-- macOS/Linux:
+macOS/Linux:
 
 ```bash
 source .venv/bin/activate
 ```
 
-- Windows PowerShell:
+Windows PowerShell:
 
 ```bash
 .venv\Scripts\Activate.ps1
 ```
 
-### Step 3: install dependencies
+### Step 4: install dependencies
 
-Project-level install:
+Root dependencies:
 
 ```bash
 uv sync
 ```
 
-Crash-course server folder dependencies:
+Crash course folder:
 
 ```bash
 uv pip install -r 02_mcpcrashcourse/mcpserver/requirements.txt
 ```
 
-### Step 4: environment variables (if running agent chat)
+LangChain folder:
 
-Create `.env` with:
+```bash
+uv pip install -r 03_mcplangchain/requirements.txt
+```
+
+### Step 5: environment variables (for agent clients)
+
+Create `.env`:
 
 ```env
 GROQ_API_KEY=your_key_here
 ```
 
-### Step 5: configure MCP server registration (if needed)
+### Command verification (run-from and paths)
 
-Use `02_mcpcrashcourse/weather.json` for MCP host integration, or add equivalent config in your IDE/host.
+- **Repository root:** All `uv run`, `uv sync`, and `uv pip install` commands are intended to be run from the repository root (`McpDemo/`). Server entry points use paths like `02_mcpcrashcourse/server/weather.py` relative to root.
+- **Stdio client (`client-stdio.py`):** Must be run from `02_mcpcrashcourse/mcpserver/` because it spawns `server.py` in the current working directory. Use `uv run python client-stdio.py` (or `uv run ./client-stdio.py`) from that directory.
+- **SSE client:** Start the server from root with `uv run 02_mcpcrashcourse/mcpserver/server.py`, then from root run `uv run 02_mcpcrashcourse/mcpserver/client-sse.py`. No need to `cd` into mcpserver.
+- **`02_mcpcrashcourse/client.py`:** Run from `02_mcpcrashcourse/` so that `weather.json` is in the current directory (config path in code is `weather.json`).
+- **`03_mcplangchain/client.py`:** Run from `03_mcplangchain/` so that `mathserver.py` is found when the client spawns the math server. Start the LangChain weather server first in another terminal: `uv run 03_mcplangchain/weather.py` (client expects it at `http://localhost:8000/mcp`).
+- **VS Code MCP config:** Paths in the example JSON are relative to the workspace root; the MCP host typically runs with workspace root as cwd.
 
 ---
 
-## 6) Features and Tools
+## 6) Features, Tools, and Resources
 
-## Core server features
+## A) Crash course weather capabilities
 
-- FastMCP-based server setup.
-- External API integration (National Weather Service API).
-- Tool registration via decorators.
-- Resource registration via URI scheme.
-- Multi-transport support (`stdio` and `sse`).
+### Tool: `get_alerts(state: str)`
 
-## Tool descriptions
+- Fetches active weather alerts for a state.
+- Uses National Weather Service API.
+- Returns formatted alert blocks (event, area, severity, description, instructions).
 
-### `get_alerts(state: str)`
+### Tool: `get_forecast(latitude: float, longitude: float)`
 
-- **Purpose**: fetch active weather alerts for a US state (two-letter code).
-- **Input**: `state` such as `CA`, `NY`, `TX`.
-- **Behavior**:
-  - calls `https://api.weather.gov/alerts/active/area/{state}`
-  - formats results into readable output blocks.
-- **Output**:
-  - formatted alert text or no-alert/error message.
+- Resolves forecast endpoint using `points` API.
+- Returns forecast details (temperature, wind, detailed forecast) for upcoming periods.
 
-### `get_forecast(latitude: float, longitude: float)` (in `mcpserver/server.py`)
+### Resource: `echo://{message}`
 
-- **Purpose**: fetch forecast details for geographic coordinates.
-- **Input**: coordinates, e.g. `(37.77, -122.42)`.
-- **Behavior**:
-  - resolves forecast endpoint from `/points/{lat},{lon}`
-  - fetches forecast periods
-  - returns first 5 period summaries.
-- **Output**:
-  - text sections containing temperature, wind, and detailed forecast.
+- Returns `Resource echo: <message>`.
+- Useful for validating resource wiring.
 
-## Resource descriptions
+## B) LangChain workflow capabilities
 
-### `echo://{message}` (in `server/weather.py`)
+### Tool: `add(a, b)`
 
-- **Purpose**: demonstrates MCP resource retrieval semantics.
-- **Input**: URI parameterized message.
-- **Output**: `Resource echo: <message>`.
+- Returns arithmetic sum.
 
-This is a pedagogical resource that helps validate resource wiring before implementing richer data resources.
+### Tool: `multiple(a, b)`
+
+- Returns arithmetic product.
+
+### Tool: `get_weather(location)`
+
+- Returns sample weather text from the streamable HTTP weather server.
+
+### Multi-server orchestration
+
+`03_mcplangchain/client.py` combines tools from two MCP servers into one agent context, allowing one prompt stream to invoke math and weather tools as needed.
 
 ---
 
 ## 7) Running the Project
 
-## A) Development mode (MCP Inspector)
+## A) Development mode with MCP Inspector
 
-Use this when debugging server behavior and tool schema:
+Crash course weather server:
 
 ```bash
 uv run mcp dev 02_mcpcrashcourse/server/weather.py
 ```
 
-## B) Normal run mode
+LangChain math server:
 
-Run server as MCP service:
+```bash
+uv run mcp dev 03_mcplangchain/mathserver.py
+```
+
+LangChain weather server:
+
+```bash
+uv run mcp dev 03_mcplangchain/weather.py
+```
+
+## B) Normal mode
+
+Crash course weather server:
 
 ```bash
 uv run mcp run 02_mcpcrashcourse/server/weather.py
 ```
 
+Math server:
+
+```bash
+uv run 03_mcplangchain/mathserver.py
+```
+
+LangChain weather server:
+
+```bash
+uv run 03_mcplangchain/weather.py
+```
+
 ## C) Install into Claude Desktop
 
-Install MCP server registration:
+Crash course weather server:
 
 ```bash
 uv run mcp install 02_mcpcrashcourse/server/weather.py
 ```
 
-## D) Run script clients
+Math server:
 
-Stdio client:
+```bash
+uv run mcp install 03_mcplangchain/mathserver.py
+```
+
+LangChain weather server:
+
+```bash
+uv run mcp install 03_mcplangchain/weather.py
+```
+
+## D) Run local script clients
+
+Crash course stdio client (must run from `mcpserver/` so `server.py` is in cwd):
 
 ```bash
 cd 02_mcpcrashcourse/mcpserver
-uv run client-stdio.py
+uv run python client-stdio.py
 ```
 
-SSE client (requires server running with SSE):
+Crash course SSE client (run server from root first, then client from root):
 
 ```bash
-cd 02_mcpcrashcourse/mcpserver
-uv run server.py
-uv run client-sse.py
+# Terminal 1 (from repo root)
+uv run 02_mcpcrashcourse/mcpserver/server.py
+
+# Terminal 2 (from repo root)
+uv run 02_mcpcrashcourse/mcpserver/client-sse.py
 ```
 
-## E) VS Code MCP workflow
+Crash course agent client (run from `02_mcpcrashcourse/` so `weather.json` is in cwd):
 
-1. Open repo in VS Code.
-2. Ensure dependencies are installed (`uv sync`).
-3. Add MCP server config in your MCP extension/user settings.
-4. Start server if required by your workflow.
-5. Open MCP chat interface and test with weather prompts.
+```bash
+cd 02_mcpcrashcourse
+uv run python client.py
+```
 
-Sample MCP config:
+LangChain multi-server client (run from `03_mcplangchain/`; start weather server first in another terminal):
+
+```bash
+# Terminal 1 (from repo root)
+uv run 03_mcplangchain/weather.py
+
+# Terminal 2
+cd 03_mcplangchain
+uv run client.py
+```
+
+---
+
+## 8) MCP Connect in VS Code
+
+### Step-by-step
+
+1. Open repository in VS Code.
+2. Activate `.venv` and install dependencies.
+3. Configure MCP servers in your MCP extension/user settings.
+4. Start required servers or let MCP host launch them by config.
+5. Open chat and verify tool discovery.
+
+Example configuration (paths are relative to workspace root; ensure the MCP host runs with workspace root as cwd):
 
 ```json
 {
   "mcpServers": {
-    "weather": {
+    "weather-crash-course": {
       "command": "uv",
       "args": [
         "run",
@@ -309,124 +385,120 @@ Sample MCP config:
         "run",
         "02_mcpcrashcourse/server/weather.py"
       ]
+    },
+    "math": {
+      "command": "python",
+      "args": ["03_mcplangchain/mathserver.py"]
+    },
+    "weather-langchain": {
+      "command": "python",
+      "args": ["03_mcplangchain/weather.py"]
     }
   }
 }
 ```
 
+Example prompts in chat:
+
+- "Get alerts for CA."
+- "Forecast for 37.77, -122.42."
+- "What is (3 + 5) x 12?"
+
 ---
 
-## 8) Usage Examples
+## 9) Usage Examples
 
-## Example 1: List and call tools via stdio client
+## Example 1: stdio client tool discovery and call
 
-Command:
+Run from `02_mcpcrashcourse/mcpserver/` so the client can spawn `server.py` in the same directory:
 
 ```bash
 cd 02_mcpcrashcourse/mcpserver
-uv run client-stdio.py
+uv run python client-stdio.py
 ```
 
 Expected output shape:
 
 ```text
 Available tools:
-  - get_alerts: Get weather alerts for a US state.
-  - get_forecast: Get weather forecast for a location.
-The weather alerts are = <formatted alert text or "No active alerts for this state.">
+  - get_alerts
+  - get_forecast
+The weather alerts are = <formatted result>
 ```
 
-## Example 2: Call alerts in a chat host
+## Example 2: SSE client
 
-Prompt:
+Start the server from repo root, then run the client from root:
 
-```text
-Get weather alerts for CA
-```
+```bash
+# Terminal 1
+uv run 02_mcpcrashcourse/mcpserver/server.py
 
-Expected behavior:
-
-- host invokes `get_alerts` with `{ "state": "CA" }`
-- response includes event, area, severity, and instructions when available.
-
-## Example 3: Forecast request
-
-Prompt:
-
-```text
-Get forecast for latitude 37.77 and longitude -122.42
+# Terminal 2
+uv run 02_mcpcrashcourse/mcpserver/client-sse.py
 ```
 
 Expected output shape:
 
 ```text
-Tonight:
-Temperature: ...
-Wind: ...
-Forecast: ...
----
-Tomorrow:
-...
+Available tools:
+  - get_alerts
+  - get_forecast
+The weather alerts are = <formatted result>
 ```
 
-## Example 4: Resource usage
+## Example 3: LangChain multi-server agent
 
-Resource URI:
+Start the weather server first (it listens on port 8000), then run the client from `03_mcplangchain/`:
+
+```bash
+# Terminal 1 (from repo root)
+uv run 03_mcplangchain/weather.py
+
+# Terminal 2
+cd 03_mcplangchain
+uv run client.py
+```
+
+Expected output shape:
 
 ```text
-echo://hello-mcp
-```
-
-Expected response:
-
-```text
-Resource echo: hello-mcp
+Math response: 96
+Weather response: It's always raining in California
 ```
 
 ---
 
-## 9) Potential Improvements and Next Steps
+## 10) Potential Improvements and Next Steps
 
-## High-impact improvements
+## Improvements
 
-1. **Unify server entry points**
-   - Consolidate `server/weather.py` and `mcpserver/server.py` or document clear purpose split.
-2. **Fix and standardize config paths**
-   - Ensure `client.py` config path aligns with actual file locations.
-3. **Typed/structured tool output**
-   - Return structured payloads (JSON-style models) for easier downstream reasoning.
-4. **Validation and error taxonomy**
-   - Validate state codes and coordinates explicitly; improve actionable error messages.
-5. **Testing**
-   - Add unit tests for formatter/helpers and integration tests for MCP tool calls.
+1. Consolidate overlapping weather server logic between folders or clearly document intent split.
+2. Normalize config paths and file references to avoid relative-path runtime issues.
+3. Add typed outputs (Pydantic models) for tool responses.
+4. Add robust input validation and explicit error messages.
+5. Add tests:
+   - unit tests for formatting/helpers
+   - integration tests for MCP tool calls and transport modes
+6. Add lint/type checks in CI.
+7. Improve observability with request logs and tool latency metrics.
 
-## Feature extensions
+## Extension ideas
 
-- Add new tools:
-  - severe weather by county/zone
-  - geocoding tool (city -> lat/lon)
-  - historical weather summary
-- Add richer resources:
-  - `weather://alerts/{state}`
-  - `weather://forecast/{lat},{lon}`
-- Add caching/rate-limit control for API calls.
-- Add auth-aware integrations for external APIs beyond NWS.
-- Add CI checks (lint, test, type-check) and container publishing.
-
-## Deployment direction
-
-- Run as a managed service (containerized MCP server behind reverse proxy).
-- Provide environment profiles (dev/stage/prod).
-- Package reusable server module for internal MCP platform catalogs.
+- Add geocoding tool (city/state to coordinates).
+- Add severe weather summary tool by county/zone.
+- Add persistent caching for API responses.
+- Add authenticated enterprise API integrations.
+- Package servers for deployment in containerized environments.
 
 ---
 
-## 10) Conclusion
+## 11) Conclusion
 
-This project delivers a strong MCP learning and prototyping foundation by covering both consumer and producer workflows:
+This project provides a strong MCP foundation by combining:
 
-- It shows how to **use** MCP servers in agent-driven chat workflows (`01_basic_mcp`).
-- It shows how to **build** and expose MCP tools/resources with real API integrations (`02_mcpcrashcourse`).
-- It demonstrates practical local integration paths into development environments and AI hosts.
+- server implementation patterns,
+- multi-transport client connectivity,
+- and agent-driven tool orchestration.
 
-Its value is in combining architecture clarity with executable examples. With modest hardening (tests, unified configs, structured outputs, and deployment automation), this repository can evolve from a learning demo into a reusable production starter template for MCP-based tool platforms.
+`02_mcpcrashcourse` gives the practical mechanics of MCP tools/resources, while `03_mcplangchain` demonstrates how to operationalize those capabilities in an LLM-agent workflow. With incremental hardening (tests, validation, CI, and deployment packaging), this repository can evolve from a learning project into a production-ready MCP starter template.
