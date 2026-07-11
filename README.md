@@ -1,11 +1,13 @@
 # MCP Demo: AI Tooling and Agent Orchestration
 
-![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
-![MCP](https://img.shields.io/badge/Model%20Context%20Protocol-MCP-black)
-![LangChain](https://img.shields.io/badge/LangChain-Agent%20Orchestration-green)
-![LangGraph](https://img.shields.io/badge/LangGraph-ReAct%20Agents-purple)
-![uv](https://img.shields.io/badge/uv-Dependency%20Management-orange)
-![CI](https://img.shields.io/badge/CI-Ruff%20%2B%20Pytest-informational)
+<p>
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-blue.svg">
+  <img alt="Model Context Protocol" src="https://img.shields.io/badge/MCP-Model%20Context%20Protocol-black.svg">
+  <img alt="LangChain" src="https://img.shields.io/badge/LangChain-Agent%20Orchestration-green.svg">
+  <img alt="LangGraph" src="https://img.shields.io/badge/LangGraph-ReAct%20Agents-purple.svg">
+  <img alt="uv" src="https://img.shields.io/badge/uv-Dependency%20Management-orange.svg">
+  <img alt="CI" src="https://img.shields.io/badge/CI-Ruff%20%2B%20Pytest-informational.svg">
+</p>
 
 ## Overview
 
