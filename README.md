@@ -1,16 +1,23 @@
 # MCP Demo: AI Tooling and Agent Orchestration
 
-A Model Context Protocol (MCP) project that demonstrates how to build MCP servers, connect MCP clients, and orchestrate multiple tools through a LangChain/LangGraph agent.
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
+![MCP](https://img.shields.io/badge/Model%20Context%20Protocol-MCP-black)
+![LangChain](https://img.shields.io/badge/LangChain-Agent%20Orchestration-green)
+![LangGraph](https://img.shields.io/badge/LangGraph-ReAct%20Agents-purple)
+![uv](https://img.shields.io/badge/uv-Dependency%20Management-orange)
+![CI](https://img.shields.io/badge/CI-Ruff%20%2B%20Pytest-informational)
 
-The repository is intentionally structured as a progression:
+## Overview
+
+This repository demonstrates end-to-end Model Context Protocol (MCP) workflows in Python: building MCP servers, connecting MCP clients, and orchestrating multiple tools through LangChain/LangGraph agents.
+
+The project is structured as a progression:
 
 - `01_basic_mcp/` - config-driven MCP client workflow using external MCP servers.
 - `02_mcpcrashcourse/` - custom weather MCP servers, resources, stdio/SSE clients, and Docker support.
 - `03_mcplangchain/` - multi-server MCP orchestration with LangChain and LangGraph.
 
-## Why This Project Exists
-
-This project shows practical AI engineering skills beyond prompt experiments:
+It covers the core lifecycle of an MCP integration:
 
 - MCP server design with typed tools and resources.
 - Multiple MCP transports: `stdio`, `sse`, and `streamable-http`.
