@@ -45,16 +45,14 @@ McpDemo/
 
 ## Where To Work
 
-| Goal | Start here | Notes |
-| --- | --- |
-| Add or change weather MCP tools | `02_mcpcrashcourse/mcpserver/server.py` | Main weather server with `get_alerts` and `get_forecast` |
-| Reuse weather formatting/request logic | `mcpdemo/weather_tools.py` | Shared National Weather Service helpers used by weather servers |
-| Test deterministic and transport behavior | `tests/` | Tests mock external calls and include a stdio MCP server/client check |
-| Experiment with MCP transports | `02_mcpcrashcourse/mcpserver/client-stdio.py`, `client-sse.py` | Direct client examples for `stdio` and `sse` |
-| Add LangChain agent behavior | `03_mcplangchain/client.py` | Aggregates MCP tools through `MultiServerMCPClient` |
-| Change LangChain provider/model settings | `mcpdemo/langchain_settings.py` | Typed settings from environment variables |
-| Add simple MCP tools | `03_mcplangchain/mathserver.py` | Small deterministic tool server, useful for testing orchestration |
-| Change dependencies or tooling | `pyproject.toml` | Runtime/dev dependencies, Ruff, and Pytest config |
+- `02_mcpcrashcourse/mcpserver/server.py` - main weather MCP server with `get_alerts` and `get_forecast`.
+- `mcpdemo/weather_tools.py` - shared National Weather Service request and formatting helpers.
+- `tests/` - deterministic tests plus a stdio MCP server/client integration check.
+- `02_mcpcrashcourse/mcpserver/client-stdio.py` and `client-sse.py` - direct client examples for `stdio` and `sse`.
+- `03_mcplangchain/client.py` - LangChain/LangGraph agent client that aggregates MCP tools.
+- `mcpdemo/langchain_settings.py` - typed settings for provider, model, and MCP server configuration.
+- `03_mcplangchain/mathserver.py` - small deterministic math server for testing orchestration.
+- `pyproject.toml` - dependencies, Ruff config, and Pytest config.
 
 ## Quick Start
 
