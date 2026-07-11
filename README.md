@@ -9,76 +9,74 @@
   <img alt="CI" src="https://img.shields.io/badge/CI-Ruff%20%2B%20Pytest-informational.svg">
 </p>
 
-## Overview
+Python examples for building Model Context Protocol (MCP) servers, connecting MCP clients, and orchestrating tools through LangChain/LangGraph agents.
 
-This repository demonstrates end-to-end Model Context Protocol (MCP) workflows in Python: building MCP servers, connecting MCP clients, and orchestrating multiple tools through LangChain/LangGraph agents.
+This repository is meant to be easy for another developer to clone, run, understand, and extend. It keeps the README focused on the information needed to work on the project, while the longer walkthrough lives in `PROJECT_ANALYSIS.md`.
 
-The project is structured as a progression:
+## What This Demonstrates
 
-- `01_basic_mcp/` - config-driven MCP client workflow using external MCP servers.
-- `02_mcpcrashcourse/` - custom weather MCP servers, resources, stdio/SSE clients, and Docker support.
-- `03_mcplangchain/` - multi-server MCP orchestration with LangChain and LangGraph.
+- Builds custom MCP tools and resources with `FastMCP`.
+- Demonstrates multiple MCP transports: `stdio`, `sse`, and `streamable-http`.
+- Connects MCP servers to direct clients and LangChain/LangGraph ReAct agents.
+- Uses `uv` with a locked dependency graph for repeatable local setup.
+- Includes deterministic tests for tool behavior without live LLM calls.
+- Keeps CI in place with Ruff and Pytest checks.
 
-It covers the core lifecycle of an MCP integration:
-
-- MCP server design with typed tools and resources.
-- Multiple MCP transports: `stdio`, `sse`, and `streamable-http`.
-- Agent integration using LangChain, LangGraph, and `mcp-use`.
-- Reproducible dependency management with `uv`.
-- Automated tests and CI for deterministic tool behavior.
-- Clear local development workflow for future extensions.
-
-## Architecture
+## Project Map
 
 ```text
 McpDemo/
-├── 01_basic_mcp/              # External MCP server client demo
+├── 01_basic_mcp/              # Config-driven client using external MCP servers
 ├── 02_mcpcrashcourse/
 │   ├── server/weather.py      # FastMCP weather alerts + echo resource
-│   ├── mcpserver/server.py    # Weather alerts + forecast server
+│   ├── mcpserver/server.py    # Weather alerts + forecast MCP server
 │   ├── mcpserver/client-*.py  # stdio and SSE clients
 │   └── weather.json           # Portable MCP server config
 ├── 03_mcplangchain/
 │   ├── mathserver.py          # FastMCP math tools
 │   ├── weather.py             # Streamable HTTP weather tool
 │   └── client.py              # LangChain multi-server agent client
-├── tests/                     # Unit tests for deterministic tool behavior
-├── .github/workflows/ci.yml   # Lint and test workflow
-├── pyproject.toml             # Runtime and dev dependencies
+├── tests/                     # Unit tests for deterministic behavior
+├── .github/workflows/ci.yml   # Ruff + Pytest workflow
+├── pyproject.toml             # Project metadata and dependencies
 └── uv.lock                    # Locked dependency graph
 ```
 
-## Prerequisites
+## Where To Work
+
+| Goal | Start here | Notes |
+| --- | --- |
+| Add or change weather MCP tools | `02_mcpcrashcourse/mcpserver/server.py` | Main weather server with `get_alerts` and `get_forecast` |
+| Test deterministic tool logic | `tests/` | Tests mock external calls and avoid live LLM/API dependency |
+| Experiment with MCP transports | `02_mcpcrashcourse/mcpserver/client-stdio.py`, `client-sse.py` | Direct client examples for `stdio` and `sse` |
+| Add LangChain agent behavior | `03_mcplangchain/client.py` | Aggregates MCP tools through `MultiServerMCPClient` |
+| Add simple MCP tools | `03_mcplangchain/mathserver.py` | Small deterministic tool server, useful for testing orchestration |
+| Change dependencies or tooling | `pyproject.toml` | Runtime/dev dependencies, Ruff, and Pytest config |
+
+## Quick Start
+
+Prerequisites:
 
 - Python `3.11+`
 - `uv`
-- Node.js + `npx` for the external MCP servers in `01_basic_mcp/browser_mcp.json`
-- Optional: `GROQ_API_KEY` in `.env` for LLM-backed agent clients
-
-## Setup
+- Node.js + `npx` for the external servers used by `01_basic_mcp/browser_mcp.json`
+- Optional: `GROQ_API_KEY` in `.env` for LLM-backed clients
 
 ```bash
-git clone <your-repo-url>
+git clone <repo-url>
 cd McpDemo
 uv sync --all-groups
 ```
 
-Create a `.env` file only if you want to run the LLM-backed interactive clients:
+Optional `.env`:
 
 ```env
 GROQ_API_KEY=your_key_here
 ```
 
-## Development Lifecycle
+## Verify The Project
 
-Use these commands before every commit:
-
-```bash
-uv run ruff check .
-uv run pytest
-```
-
-Run the full project setup from a clean machine:
+Run these checks before opening a PR:
 
 ```bash
 uv sync --frozen --all-groups
@@ -86,62 +84,55 @@ uv run ruff check .
 uv run pytest
 ```
 
-The CI workflow runs the same lint and test checks on pushes and pull requests.
+The GitHub Actions workflow runs the same lint and test checks on pushes and pull requests.
 
-## Quick Runs
+## Run Examples
 
 | Workflow | Run from | Command |
 | --- | --- | --- |
 | Basic external MCP chat | `01_basic_mcp/` | `uv run python app.py` |
 | Weather MCP Inspector | repo root | `uv run mcp dev 02_mcpcrashcourse/server/weather.py` |
 | Weather stdio client | `02_mcpcrashcourse/mcpserver/` | `uv run python client-stdio.py` |
-| Weather SSE server | repo root | `uv run 02_mcpcrashcourse/mcpserver/server.py` |
-| Weather SSE client | repo root | `uv run 02_mcpcrashcourse/mcpserver/client-sse.py` |
-| LangChain weather server | repo root | `uv run 03_mcplangchain/weather.py` |
+| Weather SSE server | repo root | `uv run python 02_mcpcrashcourse/mcpserver/server.py` |
+| Weather SSE client | repo root | `uv run python 02_mcpcrashcourse/mcpserver/client-sse.py` |
+| LangChain weather server | repo root | `uv run python 03_mcplangchain/weather.py` |
 | LangChain multi-server client | `03_mcplangchain/` | `uv run python client.py` |
 
-## Example Capabilities
+## Example Tool Surface
 
-`02_mcpcrashcourse/server/weather.py`
+- `get_alerts(state: str)` - fetches and formats active US weather alerts.
+- `get_forecast(latitude: float, longitude: float)` - resolves a weather grid point and returns forecast periods.
+- `add(a: int, b: int)` - deterministic MCP math tool.
+- `multiple(a: int, b: int)` - deterministic MCP math tool.
+- `get_weather(location: str)` - simple streamable HTTP weather tool for agent demos.
+- `echo://{message}` - MCP resource example.
 
-- `get_alerts(state: str)` - fetches active US weather alerts.
-- `echo://{message}` - resource example for MCP resource wiring.
+## Development Notes
 
-`02_mcpcrashcourse/mcpserver/server.py`
+- Keep `uv` as the single dependency manager and commit updates to `uv.lock`.
+- Keep tests deterministic: mock network calls and avoid requiring LLM keys in CI.
+- Put reusable tool logic behind small functions so it can be tested outside an MCP runtime.
+- Use `.env` only for local interactive clients that need provider keys.
+- Prefer adding focused examples over large tutorial dumps in the README.
 
-- `get_alerts(state: str)` - fetches and formats active alerts.
-- `get_forecast(latitude: float, longitude: float)` - resolves the forecast grid and returns the next five forecast periods.
+## Good Next Improvements
 
-`03_mcplangchain/mathserver.py`
-
-- `add(a: int, b: int)` - deterministic math tool.
-- `multiple(a: int, b: int)` - deterministic math tool.
-
-`03_mcplangchain/weather.py`
-
-- `get_weather(location: str)` - simple streamable HTTP weather tool for agent orchestration demos.
+- Factor duplicated weather formatting/request logic into a shared module.
+- Add transport-level integration tests that start MCP servers locally.
+- Add typed configuration for model/provider selection.
+- Add a short terminal recording or screenshot for MCP Inspector and the LangChain agent run.
 
 ## Docker
 
-Build the crash-course MCP weather server from the repository root:
+Build and run the crash-course MCP weather server:
 
 ```bash
 docker build -f 02_mcpcrashcourse/mcpserver/Dockerfile -t mcp-weather-demo .
 docker run --rm -p 8000:8000 mcp-weather-demo
 ```
 
-## Engineering Notes
+## Notes For Reviewers
 
-This repo is organized like a maintained Python project:
+This is a learning-focused MCP repository, but it is organized like a maintainable Python project: dependencies are locked, deterministic logic is tested, linting is automated, and interactive/LLM-backed examples are separated from CI-safe checks.
 
-- `uv` is the single dependency manager.
-- Tests avoid live LLM calls and live API assumptions.
-- CI verifies deterministic logic on every change.
-- Demo folders remain readable for learning, while the root workflow behaves like a maintained Python project.
-
-## Next Engineering Improvements
-
-- Factor duplicate weather formatting into a shared package module.
-- Add transport-level integration tests that spin up MCP servers locally.
-- Add typed configuration for model/provider selection.
-- Add screenshots or terminal recordings to show MCP Inspector and LangChain agent runs.
+For a deeper file-by-file walkthrough, see `PROJECT_ANALYSIS.md`.
