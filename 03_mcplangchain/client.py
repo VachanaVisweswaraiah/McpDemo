@@ -6,30 +6,18 @@ from langchain_groq import ChatGroq
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 
+from mcpdemo.langchain_settings import LangChainAgentSettings
+
 
 async def main():
     load_dotenv()
-    groq_api_key = os.getenv("GROQ_API_KEY")
-    if not groq_api_key:
-        raise RuntimeError("GROQ_API_KEY is required. Add it to your environment or .env file.")
-    os.environ["GROQ_API_KEY"] = groq_api_key
+    settings = LangChainAgentSettings.from_env()
+    os.environ["GROQ_API_KEY"] = settings.groq_api_key
 
-    client = MultiServerMCPClient(
-        {
-            "math": {
-                "command": "uv",
-                "args": ["run", "python", "mathserver.py"],
-                "transport": "stdio",
-            },
-            "weather": {
-                "url": "http://localhost:8000/mcp",
-                "transport": "streamable_http",
-            },
-        }
-    )
+    client = MultiServerMCPClient(settings.mcp_servers())
 
     tools = await client.get_tools()
-    model = ChatGroq(model="qwen-qwq-32b")
+    model = ChatGroq(model=settings.groq_model)
     agent = create_react_agent(model, tools)
 
     math_response = await agent.ainvoke(

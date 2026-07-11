@@ -19,7 +19,7 @@ This repository is meant to be easy for another developer to clone, run, underst
 - Demonstrates multiple MCP transports: `stdio`, `sse`, and `streamable-http`.
 - Connects MCP servers to direct clients and LangChain/LangGraph ReAct agents.
 - Uses `uv` with a locked dependency graph for repeatable local setup.
-- Includes deterministic tests for tool behavior without live LLM calls.
+- Includes deterministic tests plus a stdio MCP transport integration test.
 - Keeps CI in place with Ruff and Pytest checks.
 
 ## Project Map
@@ -36,6 +36,7 @@ McpDemo/
 │   ├── mathserver.py          # FastMCP math tools
 │   ├── weather.py             # Streamable HTTP weather tool
 │   └── client.py              # LangChain multi-server agent client
+├── mcpdemo/                   # Shared weather helpers and typed config
 ├── tests/                     # Unit tests for deterministic behavior
 ├── .github/workflows/ci.yml   # Ruff + Pytest workflow
 ├── pyproject.toml             # Project metadata and dependencies
@@ -47,9 +48,11 @@ McpDemo/
 | Goal | Start here | Notes |
 | --- | --- |
 | Add or change weather MCP tools | `02_mcpcrashcourse/mcpserver/server.py` | Main weather server with `get_alerts` and `get_forecast` |
-| Test deterministic tool logic | `tests/` | Tests mock external calls and avoid live LLM/API dependency |
+| Reuse weather formatting/request logic | `mcpdemo/weather_tools.py` | Shared National Weather Service helpers used by weather servers |
+| Test deterministic and transport behavior | `tests/` | Tests mock external calls and include a stdio MCP server/client check |
 | Experiment with MCP transports | `02_mcpcrashcourse/mcpserver/client-stdio.py`, `client-sse.py` | Direct client examples for `stdio` and `sse` |
 | Add LangChain agent behavior | `03_mcplangchain/client.py` | Aggregates MCP tools through `MultiServerMCPClient` |
+| Change LangChain provider/model settings | `mcpdemo/langchain_settings.py` | Typed settings from environment variables |
 | Add simple MCP tools | `03_mcplangchain/mathserver.py` | Small deterministic tool server, useful for testing orchestration |
 | Change dependencies or tooling | `pyproject.toml` | Runtime/dev dependencies, Ruff, and Pytest config |
 
@@ -72,6 +75,8 @@ Optional `.env`:
 
 ```env
 GROQ_API_KEY=your_key_here
+GROQ_MODEL=qwen-qwq-32b
+MCP_WEATHER_URL=http://localhost:8000/mcp
 ```
 
 ## Verify The Project
@@ -115,13 +120,6 @@ The GitHub Actions workflow runs the same lint and test checks on pushes and pul
 - Use `.env` only for local interactive clients that need provider keys.
 - Prefer adding focused examples over large tutorial dumps in the README.
 
-## Good Next Improvements
-
-- Factor duplicated weather formatting/request logic into a shared module.
-- Add transport-level integration tests that start MCP servers locally.
-- Add typed configuration for model/provider selection.
-- Add a short terminal recording or screenshot for MCP Inspector and the LangChain agent run.
-
 ## Docker
 
 Build and run the crash-course MCP weather server:
@@ -133,6 +131,6 @@ docker run --rm -p 8000:8000 mcp-weather-demo
 
 ## Notes For Reviewers
 
-This is a learning-focused MCP repository, but it is organized like a maintainable Python project: dependencies are locked, deterministic logic is tested, linting is automated, and interactive/LLM-backed examples are separated from CI-safe checks.
+The important review paths are quick to check: dependencies install with `uv sync --frozen --all-groups`, deterministic tests run without LLM keys, and interactive examples are kept separate from CI-safe checks.
 
 For a deeper file-by-file walkthrough, see `PROJECT_ANALYSIS.md`.
