@@ -1,15 +1,13 @@
 {
-    "mcpServers": {
-      "weather": {
-        "command": "uv",
-        "args": [
-          "run",
-          "--with",
-          "mcp[cli]",
-          "mcp",
-          "run",
-          "/Users/vachanavisweswaraiah/Desktop/Github/McpDemo/02_mcpcrashcourse/server/weather.py"
-        ]
-      }
+  "mcpServers": {
+    "weather": {
+      "command": "uv",
+      "args": [
+        "run",
+        "mcp",
+        "run",
+        "server/weather.py"
+      ]
     }
   }
+}

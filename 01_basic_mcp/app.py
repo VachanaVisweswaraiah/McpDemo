@@ -18,25 +18,30 @@ Supports:
 """
 
 import asyncio
+import os
+
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from mcp_use import MCPAgent, MCPClient
-import os
+
 
 async def run_memory_chat():
     load_dotenv()
-    os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    if not groq_api_key:
+        raise RuntimeError("GROQ_API_KEY is required. Add it to your environment or .env file.")
+    os.environ["GROQ_API_KEY"] = groq_api_key
 
-    config_file ="browser_mcp.json"
+    config_file = "browser_mcp.json"
     print("Initializing chat...")
 
     client = MCPClient.from_config_file(config_file)
     llm = ChatGroq(model="qwen/qwen3-32b")
     agent = MCPAgent(
         llm=llm,
-        client = client,
-        max_steps = 15,
-        memory_enabled = True,
+        client=client,
+        max_steps=15,
+        memory_enabled=True,
     )
 
     print("\n===== Interactive MCP Chat =====")
@@ -45,9 +50,9 @@ async def run_memory_chat():
     print("--------------------------------")
 
     try:
-        while True : 
+        while True:
             user_input = input("\n You: ")
-            if user_input.lower() in ["exit","quit"]:
+            if user_input.lower() in ["exit", "quit"]:
                 print("Ending conversation..")
                 break
 
@@ -71,4 +76,3 @@ async def run_memory_chat():
 
 if __name__ == "__main__":
     asyncio.run(run_memory_chat())
-
